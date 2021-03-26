@@ -1,26 +1,29 @@
 const express = require('express')
 const Product = require('../model/product')
+const auth = require('../middleware/auth')
 
 const router = express.Router()
 
-router.post('/product', async (req, res) => {
+router.post('/product',auth,async (req, res) => {
     try {
         await Product.sync()
-        const product = Product.build(req.body)
-        await product.save()
+        //const product = Product.build({...req.body,userId:req.user.id})
+        const product = await req.user.createProduct(req.body)               //method ==> req.user.createModelname({})  ==>Magic association method
+        //await product.save()
         res.send(product)
     } catch (error) {
         res.status(400).send(error)
     }
 })
-router.get('/product', async (req, res) => {
+router.get('/product',auth,async (req, res) => {
     try {
-        const product = await Product.findAll()
+        const product = await req.user.getProducts({where:{id:req.query.id}})
+        //const product = await Product.findAll()
         if (!product) {
             res.status(404).send('Product not found')
         }
         res.send(product)
-    } catch (error) {
+    } catch (error) {              
         res.status(400).send(error)
     }
 })
