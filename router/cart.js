@@ -52,4 +52,14 @@ router.get('/cartitem',auth,async (req,res)=>{
     }
 })
 
+router.delete('/cartitem',auth,async (req,res)=>{
+    try {
+        const cart = await req.user.getCart()
+        const product = await cart.getProducts({where:{id:req.query.id}})
+        await product[0].cartitem.destroy()
+        res.redirect('/cartitem')
+    } catch (error) {
+        res.status(400).send(error)
+    }
+})
 module.exports = router 
